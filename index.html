@@ -5,6 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>KOMDEX-BJC-Bestel</title>
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <script>
+    // Check if library is loaded
+    window.addEventListener('load', () => {
+      if (typeof Html5Qrcode === 'undefined') {
+        console.error('HTML5-QRCode library niet geladen!');
+      }
+    });
+  </script>
   <style>
     :root {
       --bg: #0f1115;
@@ -401,35 +409,65 @@
 
   // QR Code Scanner functionaliteit
   function startQRScanner() {
+    if (typeof Html5Qrcode === 'undefined') {
+      alert('QR-code scanner library niet geladen. Ververs de pagina.');
+      stopQRScanner();
+      return;
+    }
+
     if (qrScanner) {
-      qrScanner.clear();
+      try {
+        qrScanner.clear();
+      } catch(e) {}
       qrScanner = null;
     }
 
-    qrScanner = new Html5Qrcode("qr-reader");
-    const config = {
-      fps: 10,
-      qrbox: { width: 250, height: 250 },
-      aspectRatio: 1.0
-    };
+    try {
+      qrScanner = new Html5Qrcode("qr-reader");
+      const config = {
+        fps: 10,
+        qrbox: function(viewfinderWidth, viewfinderHeight) {
+          let minEdgePercentage = 0.7;
+          let minEdgeSize = Math.min(viewfinderWidth, viewfinderHeight);
+          let qrboxSize = Math.floor(minEdgeSize * minEdgePercentage);
+          return {
+            width: qrboxSize,
+            height: qrboxSize
+          };
+        },
+        aspectRatio: 1.0
+      };
 
-    qrScanner.start(
-      { facingMode: "environment" }, // Gebruik achterste camera op mobiel
-      config,
-      (decodedText) => {
-        // QR-code succesvol gescand
-        $q.value = decodedText;
-        doSearch();
+      qrScanner.start(
+        { facingMode: "environment" }, // Gebruik achterste camera op mobiel
+        config,
+        (decodedText, decodedResult) => {
+          // QR-code succesvol gescand
+          console.log("QR-code gescand:", decodedText);
+          $q.value = decodedText;
+          doSearch();
+          stopQRScanner();
+        },
+        (errorMessage) => {
+          // Fout wordt genegeerd (scanner blijft proberen)
+          // console.log("Scan error (negeer):", errorMessage);
+        }
+      ).catch((err) => {
+        console.error("QR scanner error:", err);
+        let errorMsg = "Kan camera niet openen.";
+        if (err.name === 'NotAllowedError') {
+          errorMsg = "Camera toegang geweigerd. Geef toestemming in je browser instellingen.";
+        } else if (err.name === 'NotFoundError') {
+          errorMsg = "Geen camera gevonden op dit apparaat.";
+        }
+        alert(errorMsg);
         stopQRScanner();
-      },
-      (errorMessage) => {
-        // Fout wordt genegeerd (scanner blijft proberen)
-      }
-    ).catch((err) => {
-      console.error("QR scanner error:", err);
-      alert("Kan camera niet openen. Controleer of je toestemming hebt gegeven.");
+      });
+    } catch (err) {
+      console.error("Error initializing scanner:", err);
+      alert("Fout bij initialiseren van QR-scanner: " + err.message);
       stopQRScanner();
-    });
+    }
   }
 
   function stopQRScanner() {
@@ -439,6 +477,9 @@
         qrScanner = null;
       }).catch((err) => {
         console.error("Error stopping scanner:", err);
+        try {
+          qrScanner.clear();
+        } catch(e) {}
         qrScanner = null;
       });
     }
@@ -446,8 +487,20 @@
   }
 
   $qrBtn.addEventListener('click', () => {
+    console.log("QR knop geklikt");
+    if (!$qrModal) {
+      alert("QR modal element niet gevonden!");
+      return;
+    }
     $qrModal.classList.add('active');
-    setTimeout(() => startQRScanner(), 100);
+    console.log("Modal geopend, start scanner...");
+    setTimeout(() => {
+      if (!$qrReader) {
+        alert("QR reader element niet gevonden!");
+        return;
+      }
+      startQRScanner();
+    }, 300);
   });
 
   $qrClose.addEventListener('click', stopQRScanner);
