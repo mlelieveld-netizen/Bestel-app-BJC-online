@@ -41,10 +41,10 @@
     .qr-btn:hover { background:#1d2230; }
     .qr-modal { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.9); z-index:1000; align-items:center; justify-content:center; flex-direction:column; }
     .qr-modal.active { display:flex; }
-    .qr-scanner-container { background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:20px; max-width:90vw; max-height:90vh; position:relative; }
-    .qr-scanner-container #qr-reader { width:100%; max-width:500px; }
-    .qr-close { position:absolute; top:10px; right:10px; background:var(--danger); color:white; border:none; border-radius:8px; padding:8px 12px; cursor:pointer; font-size:14px; }
-    .qr-close:hover { opacity:0.8; }
+    .qr-scanner-container { background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:20px; max-width:95vw; max-height:95vh; width:90vw; position:relative; display:flex; flex-direction:column; align-items:center; }
+    .qr-scanner-container #qr-reader { width:100%; max-width:100%; }
+    .qr-close { position:absolute; top:10px; right:10px; background:var(--danger); color:white; border:none; border-radius:8px; padding:10px 16px; cursor:pointer; font-size:16px; font-weight:600; z-index:1001; box-shadow: 0 2px 8px rgba(0,0,0,0.5); }
+    .qr-close:hover { opacity:0.9; transform: scale(1.05); }
     .pill { font-size:12px; padding:8px 10px; border:1px dashed var(--border); color:var(--muted); border-radius:10px; }
     .hidden { display:none!important; }
     .grid { display:grid; grid-template-columns: 1.3fr 1fr; gap:16px; margin-top:12px; }
@@ -76,7 +76,9 @@
   .search { order: 1; flex: 1 1 100%; }
   .qr-btn { order: 2; }
   .pill { order: 3; flex: 1 1 100%; }
-  .qr-scanner-container #qr-reader { max-width: 95vw; }
+  .qr-scanner-container { width: 95vw; max-width: 95vw; padding: 15px; }
+  .qr-scanner-container #qr-reader { max-width: 100%; width: 100%; }
+  .qr-close { z-index: 1001; }
   .grid { grid-template-columns: 1fr; }
   .panel { padding: 14px 12px; }
   .results { max-height: none; }
