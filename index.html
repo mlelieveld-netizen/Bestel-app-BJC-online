@@ -219,7 +219,7 @@
   let cart = [];
   let qrScanner = null;
   let qrScanBlocked = false;
-  let qrScanDelay = 2000; // 2 seconden vertraging
+  let qrScanDelay = 3000; // 3 seconden vertraging
   let qrCountdownInterval = null;
 
   function fmt(n) { return (n==null||n==='')?'-':(typeof n==='number'? n.toLocaleString('nl-NL', {minimumFractionDigits:2, maximumFractionDigits:2}) : n); }
@@ -480,20 +480,15 @@
           qrCountdownInterval = setInterval(() => {
             countdown--;
             if ($qrStatus && countdown > 0) {
-              $qrStatus.textContent = `✅ QR-code gescand! Opnieuw scannen over ${countdown}s...`;
+              $qrStatus.textContent = `✅ QR-code gescand! Sluit over ${countdown}s...`;
             } else {
               clearInterval(qrCountdownInterval);
               qrCountdownInterval = null;
               qrScanBlocked = false;
-              if ($qrStatus) {
-                $qrStatus.textContent = "Richt camera op QR-code...";
-                $qrStatus.style.color = 'var(--text)';
-              }
+              // Sluit scanner automatisch na countdown
+              stopQRScanner();
             }
           }, 1000);
-          
-          // Stop scanner na vertraging (optioneel - kan ook open blijven)
-          // stopQRScanner();
         },
         (errorMessage) => {
           // Fout wordt genegeerd (scanner blijft proberen)
