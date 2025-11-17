@@ -143,7 +143,8 @@
     <div id="qrModal" class="qr-modal">
       <div class="qr-scanner-container">
         <button id="qrClose" class="qr-close">Sluiten</button>
-        <div id="qr-reader"></div>
+        <div id="qr-reader" style="width: 100%;"></div>
+        <div id="qr-status" style="color: var(--text); text-align: center; margin-top: 10px; font-size: 14px;">Camera wordt gestart...</div>
       </div>
     </div>
 
@@ -409,7 +410,10 @@
 
   // QR Code Scanner functionaliteit
   function startQRScanner() {
+    const $qrStatus = document.getElementById('qr-status');
+    
     if (typeof Html5Qrcode === 'undefined') {
+      if ($qrStatus) $qrStatus.textContent = "Fout: QR-library niet geladen!";
       alert('QR-code scanner library niet geladen. Ververs de pagina.');
       stopQRScanner();
       return;
@@ -417,26 +421,28 @@
 
     if (qrScanner) {
       try {
-        qrScanner.clear();
+        qrScanner.stop().then(() => {
+          qrScanner.clear();
+        }).catch(() => {});
       } catch(e) {}
       qrScanner = null;
     }
 
+    // Leeg de reader div eerst
+    $qrReader.innerHTML = '';
+
     try {
+      if ($qrStatus) $qrStatus.textContent = "Camera wordt gestart...";
+      
       qrScanner = new Html5Qrcode("qr-reader");
       const config = {
         fps: 10,
-        qrbox: function(viewfinderWidth, viewfinderHeight) {
-          let minEdgePercentage = 0.7;
-          let minEdgeSize = Math.min(viewfinderWidth, viewfinderHeight);
-          let qrboxSize = Math.floor(minEdgeSize * minEdgePercentage);
-          return {
-            width: qrboxSize,
-            height: qrboxSize
-          };
-        },
-        aspectRatio: 1.0
+        qrbox: { width: 250, height: 250 },
+        aspectRatio: 1.0,
+        disableFlip: false
       };
+
+      if ($qrStatus) $qrStatus.textContent = "Vraag camera toegang aan...";
 
       qrScanner.start(
         { facingMode: "environment" }, // Gebruik achterste camera op mobiel
@@ -444,6 +450,7 @@
         (decodedText, decodedResult) => {
           // QR-code succesvol gescand
           console.log("QR-code gescand:", decodedText);
+          if ($qrStatus) $qrStatus.textContent = "QR-code gescand!";
           $q.value = decodedText;
           doSearch();
           stopQRScanner();
@@ -452,19 +459,27 @@
           // Fout wordt genegeerd (scanner blijft proberen)
           // console.log("Scan error (negeer):", errorMessage);
         }
-      ).catch((err) => {
+      ).then(() => {
+        if ($qrStatus) $qrStatus.textContent = "Richt camera op QR-code...";
+        console.log("QR scanner gestart");
+      }).catch((err) => {
         console.error("QR scanner error:", err);
         let errorMsg = "Kan camera niet openen.";
         if (err.name === 'NotAllowedError') {
           errorMsg = "Camera toegang geweigerd. Geef toestemming in je browser instellingen.";
+          if ($qrStatus) $qrStatus.textContent = "Camera toegang geweigerd";
         } else if (err.name === 'NotFoundError') {
           errorMsg = "Geen camera gevonden op dit apparaat.";
+          if ($qrStatus) $qrStatus.textContent = "Geen camera gevonden";
+        } else {
+          if ($qrStatus) $qrStatus.textContent = "Fout: " + err.message;
         }
         alert(errorMsg);
         stopQRScanner();
       });
     } catch (err) {
       console.error("Error initializing scanner:", err);
+      if ($qrStatus) $qrStatus.textContent = "Fout: " + err.message;
       alert("Fout bij initialiseren van QR-scanner: " + err.message);
       stopQRScanner();
     }
@@ -482,6 +497,10 @@
         } catch(e) {}
         qrScanner = null;
       });
+    }
+    // Leeg de reader div
+    if ($qrReader) {
+      $qrReader.innerHTML = '';
     }
     $qrModal.classList.remove('active');
   }
