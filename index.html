@@ -146,7 +146,7 @@
       <div class="qr-scanner-container">
         <button id="qrClose" class="qr-close">Sluiten</button>
         <div id="qr-reader" style="width: 100%;"></div>
-        <div id="qr-status" style="color: var(--text); text-align: center; margin-top: 10px; font-size: 14px;">Camera wordt gestart...</div>
+        <div id="qr-status" style="color: var(--text); text-align: center; margin-top: 10px; font-size: 14px; min-height: 20px; font-weight: 500;">Camera wordt gestart...</div>
       </div>
     </div>
 
@@ -218,6 +218,9 @@
 
   let cart = [];
   let qrScanner = null;
+  let qrScanBlocked = false;
+  let qrScanDelay = 2000; // 2 seconden vertraging
+  let qrCountdownInterval = null;
 
   function fmt(n) { return (n==null||n==='')?'-':(typeof n==='number'? n.toLocaleString('nl-NL', {minimumFractionDigits:2, maximumFractionDigits:2}) : n); }
   function fmtKomdex(n) {
@@ -451,11 +454,46 @@
         config,
         (decodedText, decodedResult) => {
           // QR-code succesvol gescand
+          if (qrScanBlocked) return; // Negeer scans tijdens vertraging
+          
           console.log("QR-code gescand:", decodedText);
-          if ($qrStatus) $qrStatus.textContent = "QR-code gescand!";
+          
+          // Blokkeer scanner tijdelijk
+          qrScanBlocked = true;
+          
+          // Toon gescande code en start countdown
+          if ($qrStatus) {
+            $qrStatus.textContent = `✅ QR-code gescand: ${decodedText}`;
+            $qrStatus.style.color = 'var(--ok)';
+          }
+          
           $q.value = decodedText;
           doSearch();
-          stopQRScanner();
+          
+          // Stop vorige countdown als die nog loopt
+          if (qrCountdownInterval) {
+            clearInterval(qrCountdownInterval);
+          }
+          
+          // Countdown indicator
+          let countdown = qrScanDelay / 1000;
+          qrCountdownInterval = setInterval(() => {
+            countdown--;
+            if ($qrStatus && countdown > 0) {
+              $qrStatus.textContent = `✅ QR-code gescand! Opnieuw scannen over ${countdown}s...`;
+            } else {
+              clearInterval(qrCountdownInterval);
+              qrCountdownInterval = null;
+              qrScanBlocked = false;
+              if ($qrStatus) {
+                $qrStatus.textContent = "Richt camera op QR-code...";
+                $qrStatus.style.color = 'var(--text)';
+              }
+            }
+          }, 1000);
+          
+          // Stop scanner na vertraging (optioneel - kan ook open blijven)
+          // stopQRScanner();
         },
         (errorMessage) => {
           // Fout wordt genegeerd (scanner blijft proberen)
@@ -488,6 +526,11 @@
   }
 
   function stopQRScanner() {
+    qrScanBlocked = false; // Reset blokkering
+    if (qrCountdownInterval) {
+      clearInterval(qrCountdownInterval);
+      qrCountdownInterval = null;
+    }
     if (qrScanner) {
       qrScanner.stop().then(() => {
         qrScanner.clear();
