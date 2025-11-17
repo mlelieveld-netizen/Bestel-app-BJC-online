@@ -21,7 +21,8 @@
     }
     .wrap { max-width: 1100px; margin: 24px auto 56px; padding: 0 16px; }
     .header { display:flex; align-items:center; gap:12px; margin-bottom:14px; }
-    .logo { width:34px; height:34px; border-radius:10px; background:linear-gradient(135deg, var(--accent), #9ece6a); display:grid; place-items:center; font-weight:700; }
+    .logo { display:flex; align-items:center; gap:8px; }
+    .logo img { height:34px; width:auto; object-fit:contain; }
     h1 { font-size: 20px; margin:0; letter-spacing:.4px; }
     .sub { color:var(--muted); font-size:12px; margin-top:2px; }
     .bar { display:flex; gap:12px; align-items:center; }
@@ -96,7 +97,10 @@
 <body>
   <div class="wrap">
     <div class="header">
-      <div class="logo">B</div>
+      <div class="logo">
+        <img src="BJC.png" alt="BJC Logo" />
+        <img src="Oet logo.jpg" alt="Oet Logo" />
+      </div>
       <div>
         <h1>KOMDEX‑BJC‑Bestel</h1>
         <div class="sub">Laatste build: 2025-11-10 08:30 — dataset: 316 artikelen (fasteners verwijderd)</div>
