@@ -35,7 +35,8 @@
     h1 { font-size: 20px; margin:0; letter-spacing:.4px; }
     .sub { color:var(--muted); font-size:12px; margin-top:2px; }
     .bar { display:grid; grid-template-columns: 1.3fr 1fr; gap:16px; align-items:flex-start; }
-    .search-container { display:flex; flex-direction:column; gap:8px; }
+    .search-container { display:flex; flex-direction:column; gap:8px; grid-column: 1; }
+    .pill { grid-column: 2; }
     .search { width:100%; background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:10px 12px; display:flex; gap:10px; align-items:center; position:relative; }
     .btn-clear-top { width:100%; }
     .search input { flex:1; background:transparent; border:none; color:var(--text); outline:none; font-size:14px; }
