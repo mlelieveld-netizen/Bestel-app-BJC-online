@@ -68,6 +68,9 @@
     .btn:disabled { opacity:.4; cursor:not-allowed; }
     .btn-primary { background:linear-gradient(180deg, #2a3b66, #1c2a4e); color:#eaf2ff; border-color:#2d3b57; }
     .qty { width:70px; background:#0f1320; border:1px solid var(--border); color:var(--text); border-radius:8px; padding:6px 8px; }
+    .cart-total { margin-top:12px; padding:12px; background:#1a1f2e; border:1px solid var(--border); border-radius:10px; display:flex; justify-content:space-between; align-items:center; font-weight:600; }
+    .cart-total-label { color:var(--muted); font-size:14px; }
+    .cart-total-price { color:var(--text); font-size:16px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
     .tfoot { display:flex; justify-content:space-between; align-items:center; padding-top:8px; gap:10px; flex-wrap:wrap; }
     .badgelite { font-size:11px; padding:6px 8px; color:var(--muted); border:1px solid var(--border); border-radius:10px; }
     .copy { background:#112233; }
@@ -334,6 +337,7 @@
 
   function renderCart() {
     $cart.querySelectorAll('.row.item').forEach(n => n.remove());
+    $cart.querySelectorAll('.cart-total').forEach(n => n.remove());
     if (cart.length === 0) {
       $cartEmpty.classList.remove('hidden');
       $cartCount.textContent = '0 items';
@@ -363,6 +367,16 @@
       frag.appendChild(row);
     }
     $cart.appendChild(frag);
+
+    // Bereken en toon totaalprijs
+    const total = cart.reduce((sum, it) => sum + (it.aantal * it.netto), 0);
+    const totalDiv = document.createElement('div');
+    totalDiv.className = 'cart-total';
+    totalDiv.innerHTML = `
+      <span class="cart-total-label">Totaal:</span>
+      <span class="cart-total-price">€ ${fmt(total)}</span>
+    `;
+    $cart.appendChild(totalDiv);
   }
 
   function mapUnit(raw) {
